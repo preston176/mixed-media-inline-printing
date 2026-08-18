@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>MixedMediaPrint.Core</RootNamespace>
+    <AssemblyName>MixedMediaPrint.Core</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Only used from [SupportedOSPlatform("windows")]-marked members (the GDI
+         print engine's page-content drawing surface, via Graphics.FromHdc).
+         Compiles cross-platform; throws PlatformNotSupportedException on non-
+         Windows only if actually invoked there, which these members guard against. -->
+    <PackageReference Include="System.Drawing.Common" Version="9.0.0" />
+    <!-- Cross-platform (works on macOS too): backs the Tier-0 preview renderer
+         and text measurement so tab-label auto-fit can be built and unit-tested
+         without Windows. Version pinned to match PDFtoImage 5.4.0's own
+         SkiaSharp requirement below: this major version obsoletes SKPaint's
+         old TextSize/MeasureText(string)/FontMetrics in favor of SKFont. -->
+    <PackageReference Include="SkiaSharp" Version="4.150.1" />
+    <!-- PDFium-backed PDF rendering (BSD-3/Apache-2.0, not MuPDF/AGPL). Renders
+         body pages to bitmaps for both preview thumbnails and print-time content. -->
+    <PackageReference Include="PDFtoImage" Version="5.4.0" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,77 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612.00 792.00] /Resources << /Font << /F1 5 0 R /F2 6 0 R >> >> /Contents 4 0 R >>
+endobj
+4 0 obj
+<< /Length 1131 >>
+stream
+1 w [] 0 d
+0 0 612.00 792.00 re S
+0.6 0.6 0.6 RG
+1 w [3 2] 0 d
+12.00 12.00 588.00 768.00 re S
+[] 0 d 0 0 0 RG
+BT /F1 8 Tf
+16.00 768.00 Td (imageable-area boundary -- printer's hardware margin, ~0.167in) Tj ET
+0.85 0.2 0.2 RG 1.5 w [] 0 d
+563.98 476.78 43.92 144.00 re S
+BT /F1 7 Tf
+468.98 623.78 Td (template x: FAILS \(+0.11in over\)) Tj ET
+0.15 0.55 0.2 RG 1.5 w
+553.66 476.78 43.92 144.00 re S
+BT /F1 7 Tf
+483.66 466.78 Td (auto-corrected -0.143in -- fits) Tj ET
+0 0 0 RG
+q
+0.0000 -1.0000 1.0000 0.0000 575.62 548.78 cm
+BT /F2 22 Tf
+-8 -11 Td (2) Tj ET
+Q
+BT /F1 7 Tf
+433.66 454.78 Td (default: escapement 900 \(confirmed\)) Tj ET
+BT /F1 10 Tf
+72 370.00 Td (Rotation candidates \(settled -- kept here as the record of the comparison\):) Tj ET
+q
+0.0000 -1.0000 1.0000 0.0000 170.00 220.00 cm
+BT /F2 60 Tf
+-20 -28 Td (2) Tj ET
+Q
+BT /F1 9 Tf
+115.00 130.00 Td (900 -- CORRECT) Tj ET
+q
+0.0000 1.0000 -1.0000 0.0000 460.00 220.00 cm
+BT /F2 60 Tf
+-20 -28 Td (2) Tj ET
+Q
+BT /F1 9 Tf
+405.00 130.00 Td (2700 -- BACKWARDS) Tj ET
+BT /F1 8 Tf
+120 110.00 Td (left = CW \(900, now default\)                right = CCW \(2700, backwards\)) Tj ET
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+6 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+xref
+0 7
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000257 00000 n 
+0000001440 00000 n 
+0000001510 00000 n 
+trailer
+<< /Size 7 /Root 1 0 R >>
+startxref
+1585
+%%EOF

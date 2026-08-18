@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- Windows-only target (WPF): this project cannot restore/build on macOS.
+         It's scaffolded here for solution structure; build/run it on the
+         Windows workstation. See IMPLEMENTATION_PLAN.md. -->
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <OutputType>WinExe</OutputType>
+    <!-- Lets `dotnet build` at least restore/compile-check this project on
+         non-Windows dev machines. Does not make WPF apps runnable off Windows. -->
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>MixedMediaPrint.App</RootNamespace>
+    <AssemblyName>MixedMediaPrint.App</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MixedMediaPrint.Core\MixedMediaPrint.Core.csproj" />
+  </ItemGroup>
+
+</Project>

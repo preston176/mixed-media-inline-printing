@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- Genuinely cross-platform: `preview-tab` is Tier-0 (no P/Invoke) and runs
+         anywhere; the other commands call winspool.drv/gdi32.dll and are guarded
+         at runtime with OperatingSystem.IsWindows() (see Program.cs) rather than
+         the whole project declaring itself Windows-only. -->
+    <TargetFramework>net10.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>MixedMediaPrint.Cli</RootNamespace>
+    <AssemblyName>MixedMediaPrint.Cli</AssemblyName>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MixedMediaPrint.Core\MixedMediaPrint.Core.csproj" />
+  </ItemGroup>
+
+</Project>

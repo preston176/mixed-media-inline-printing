@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="MixedMediaPrint.App/MixedMediaPrint.App.csproj" />
+  <Project Path="MixedMediaPrint.Cli/MixedMediaPrint.Cli.csproj" />
+  <Project Path="MixedMediaPrint.Core/MixedMediaPrint.Core.csproj" />
+  <Project Path="MixedMediaPrint.Tests/MixedMediaPrint.Tests.csproj" />
+</Solution>

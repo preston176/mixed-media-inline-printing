@@ -1,0 +1,14 @@
+# macOS
+.DS_Store
+
+# Runtime output from legacy-testkit/pull-test.ps1 / testkit.ps1 (per-run payloads + logs)
+legacy-testkit/runs/
+
+# .NET build output
+bin/
+obj/
+*.user
+
+# IDE
+.vs/
+.idea/
