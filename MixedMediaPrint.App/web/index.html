@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Mixed Media Print</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>Mixed Media Print</h1>
+    <p class="subtitle">Sharp BP-71C65 — interleaved tab / body printing</p>
+  </header>
+
+  <main>
+    <section class="card">
+      <div class="field">
+        <label for="printer">Printer</label>
+        <select id="printer"></select>
+      </div>
+      <div class="field-row">
+        <div class="field narrow">
+          <label for="tabNumber">Tab #</label>
+          <!-- Values are reversed from their labels: tab 5 on the physical stock is what the
+               template calls TabNumber 1, and so on down. See app.js / MainWindow.xaml.cs --
+               nothing downstream of this select needs to know about the reversal. -->
+          <select id="tabNumber">
+            <option value="5">1</option>
+            <option value="4">2</option>
+            <option value="3" selected>3</option>
+            <option value="2">4</option>
+            <option value="1">5</option>
+          </select>
+        </div>
+        <div class="field grow">
+          <label for="text">Text</label>
+          <input id="text" type="text" placeholder="Optional — blank prints the bare tab number">
+        </div>
+      </div>
+      <p id="trayStatus" class="status"></p>
+    </section>
+
+    <section class="card">
+      <div class="grid-header">
+        <span>Pages</span>
+        <button id="loadPdfBtn" class="secondary" type="button">Load PDF…</button>
+        <span id="pdfFileLabel" class="status"></span>
+      </div>
+      <p class="hint">Drag tiles to reorder. The TAB tile is where the divider gets inserted.</p>
+      <div id="pageGrid" class="page-grid"></div>
+    </section>
+
+    <details class="card" open>
+      <summary>Advanced</summary>
+      <div class="advanced-body">
+        <div class="field">
+          <label for="preset">Preset</label>
+          <select id="preset">
+            <option value="custom">Custom</option>
+            <option value="default">Default: Tray 1 -&gt; tab, Tray 2 -&gt; body</option>
+            <option value="bypass" selected>Bypass -&gt; tab, Tray 1 -&gt; body (flip Y)</option>
+          </select>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="tabTrayPattern">Tab tray pattern</label>
+            <input id="tabTrayPattern" type="text">
+          </div>
+          <div class="field">
+            <label for="bodyTrayPattern">Body tray pattern</label>
+            <input id="bodyTrayPattern" type="text">
+          </div>
+        </div>
+        <div class="field-row">
+          <label class="checkbox"><input id="flipTabX" type="checkbox"> Flip X</label>
+          <label class="checkbox"><input id="flipTabY" type="checkbox"> Flip Y</label>
+        </div>
+        <div class="field-row">
+          <div class="field narrow">
+            <label for="nudgeX">Nudge X (in)</label>
+            <input id="nudgeX" type="text" value="0">
+          </div>
+          <div class="field narrow">
+            <label for="nudgeY">Nudge Y (in)</label>
+            <input id="nudgeY" type="text" value="0">
+          </div>
+          <div class="field narrow">
+            <label for="copies">Copies</label>
+            <input id="copies" type="text" value="1">
+          </div>
+        </div>
+        <button id="queryTraysBtn" class="secondary" type="button">Query trays</button>
+      </div>
+    </details>
+
+    <section class="card log-card">
+      <div class="log-header">Log</div>
+      <pre id="log"></pre>
+    </section>
+  </main>
+
+  <footer>
+    <button id="printBtn" type="button" class="primary">Print…</button>
+  </footer>
+
+  <div id="confirmOverlay" class="overlay hidden">
+    <div class="modal">
+      <h2>Confirm physical print</h2>
+      <pre id="confirmSummary"></pre>
+      <label for="confirmInput">Type PRINT to send this to the physical device:</label>
+      <input id="confirmInput" type="text" autocomplete="off">
+      <div class="modal-actions">
+        <button id="confirmCancelBtn" class="secondary" type="button">Cancel</button>
+        <button id="confirmPrintBtn" class="primary" type="button" disabled>Print</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,22 +1,24 @@
 using System.Windows;
-using MixedMediaPrint.App.ViewModels;
-using MixedMediaPrint.Core.Calibration;
+using System.Windows.Threading;
 
 namespace MixedMediaPrint.App;
 
 public partial class App : Application
 {
-    protected override void OnStartup(StartupEventArgs e)
+    public App()
     {
-        base.OnStartup(e);
-
-        // Manual composition root -- small enough app that a DI container would
-        // add ceremony without buying much. ICalibrationStore is the one seam
-        // worth naming explicitly (JSON-on-disk today, swappable later).
-        ICalibrationStore calibrationStore = JsonFileCalibrationStore.CreateDefault();
-        var shellViewModel = new ShellViewModel(calibrationStore);
-
-        var mainWindow = new MainWindow(shellViewModel);
-        mainWindow.Show();
+        // A WinExe has no console -- an unhandled exception here otherwise just kills the
+        // process with nothing visible at all (see MainWindow's PresetCombo.SelectedIndex
+        // comment for a startup crash that hit exactly this). Show it instead.
+        DispatcherUnhandledException += (_, e) =>
+        {
+            MessageBox.Show(e.Exception.ToString(), "MixedMediaPrint failed to start", MessageBoxButton.OK, MessageBoxImage.Error);
+            e.Handled = true;
+            Shutdown(1);
+        };
+        AppDomain.CurrentDomain.UnhandledException += (_, e) =>
+        {
+            MessageBox.Show(e.ExceptionObject?.ToString() ?? "Unknown error", "MixedMediaPrint crashed", MessageBoxButton.OK, MessageBoxImage.Error);
+        };
     }
 }

@@ -1,6 +1,10 @@
 <Window x:Class="MixedMediaPrint.App.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Mixed Media Inline Printing" Height="720" Width="900">
-    <ContentControl Content="{Binding CurrentViewModel}"/>
+        xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
+        Title="Mixed Media Print — Sharp BP-71C65" Height="760" Width="680"
+        MinHeight="600" MinWidth="560">
+    <Grid>
+        <wv2:WebView2 x:Name="WebView"/>
+    </Grid>
 </Window>

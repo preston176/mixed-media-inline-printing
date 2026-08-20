@@ -1,23 +1,40 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <!-- Windows-only target (WPF): this project cannot restore/build on macOS.
-         It's scaffolded here for solution structure; build/run it on the
-         Windows workstation. See IMPLEMENTATION_PLAN.md. -->
-    <TargetFramework>net10.0-windows</TargetFramework>
-    <UseWPF>true</UseWPF>
     <OutputType>WinExe</OutputType>
-    <!-- Lets `dotnet build` at least restore/compile-check this project on
-         non-Windows dev machines. Does not make WPF apps runnable off Windows. -->
-    <EnableWindowsTargeting>true</EnableWindowsTargeting>
-    <ImplicitUsings>enable</ImplicitUsings>
+    <TargetFramework>net10.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
-    <RootNamespace>MixedMediaPrint.App</RootNamespace>
-    <AssemblyName>MixedMediaPrint.App</AssemblyName>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <AssemblyName>MixedMediaPrint</AssemblyName>
+    <!-- Lets dotnet build/test succeed on macOS/Linux dev machines (compiles only;
+         the app itself is Windows-only and must be run there). -->
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\MixedMediaPrint.Core\MixedMediaPrint.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The one asset the engine cannot work without: the real 5-cut tab template. -->
+    <Content Include="..\legacy-testkit\5th-cut-1-to-500.docx">
+      <Link>Templates\5th-cut-1-to-500.docx</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4129.50" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Would otherwise be picked up by the SDK's default None-item glob; re-typed as
+         Content so it's actually copied next to the exe. -->
+    <None Remove="web\**" />
+    <Content Include="web\**">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>
