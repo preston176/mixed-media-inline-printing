@@ -6,61 +6,55 @@
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <header>
-    <h1>Mixed Media Print</h1>
-    <p class="subtitle">Sharp BP-71C65 — interleaved tab / body printing</p>
+  <header class="topbar">
+    <div class="brand">
+      <h1>Mixed Media Print</h1>
+      <p class="subtitle">Sharp BP-71C65 — interleaved tab / body printing</p>
+    </div>
+    <button id="printBtn" type="button" class="primary">Print…</button>
   </header>
 
-  <main>
-    <section class="card">
-      <div class="field">
-        <label for="printer">Printer</label>
-        <select id="printer"></select>
-      </div>
-      <div class="field-row">
-        <div class="field narrow">
-          <label for="tabNumber">Tab #</label>
-          <!-- Values are reversed from their labels: tab 5 on the physical stock is what the
-               template calls TabNumber 1, and so on down. See app.js / MainWindow.xaml.cs --
-               nothing downstream of this select needs to know about the reversal. -->
-          <select id="tabNumber">
-            <option value="5">1</option>
-            <option value="4">2</option>
-            <option value="3" selected>3</option>
-            <option value="2">4</option>
-            <option value="1">5</option>
-          </select>
-        </div>
-        <div class="field grow">
-          <label for="text">Text</label>
-          <input id="text" type="text" placeholder="Optional — blank prints the bare tab number">
-        </div>
-      </div>
-      <p id="trayStatus" class="status"></p>
-    </section>
-
-    <section class="card">
-      <div class="grid-header">
-        <span>Pages</span>
-        <button id="loadPdfBtn" class="secondary" type="button">Load PDF…</button>
-        <span id="pdfFileLabel" class="status"></span>
-      </div>
-      <p class="hint">Drag tiles to reorder. The TAB tile is where the divider gets inserted.</p>
-      <div id="pageGrid" class="page-grid"></div>
-    </section>
-
-    <details class="card" open>
-      <summary>Advanced</summary>
-      <div class="advanced-body">
+  <div class="layout">
+    <aside class="sidebar">
+      <section class="panel">
+        <h2 class="panel-title">Job setup</h2>
         <div class="field">
-          <label for="preset">Preset</label>
-          <select id="preset">
-            <option value="custom">Custom</option>
-            <option value="default">Default: Tray 1 -&gt; tab, Tray 2 -&gt; body</option>
-            <option value="bypass" selected>Bypass -&gt; tab, Tray 1 -&gt; body (flip Y)</option>
-          </select>
+          <label for="printer">Printer</label>
+          <select id="printer"></select>
         </div>
         <div class="field-row">
+          <div class="field narrow">
+            <label for="tabNumber">Tab #</label>
+            <!-- Values are reversed from their labels: tab 5 on the physical stock is what the
+                 template calls TabNumber 1, and so on down. See app.js / MainWindow.xaml.cs --
+                 nothing downstream of this select needs to know about the reversal. -->
+            <select id="tabNumber">
+              <option value="5">1</option>
+              <option value="4">2</option>
+              <option value="3" selected>3</option>
+              <option value="2">4</option>
+              <option value="1">5</option>
+            </select>
+          </div>
+          <div class="field grow">
+            <label for="text">Text</label>
+            <input id="text" type="text" placeholder="Optional — blank prints the bare tab number">
+          </div>
+        </div>
+        <p id="trayStatus" class="status"></p>
+      </section>
+
+      <details class="panel accordion">
+        <summary>Advanced calibration</summary>
+        <div class="advanced-body">
+          <div class="field">
+            <label for="preset">Preset</label>
+            <select id="preset">
+              <option value="custom">Custom</option>
+              <option value="default">Default: Tray 1 -&gt; tab, Tray 2 -&gt; body</option>
+              <option value="bypass" selected>Bypass -&gt; tab, Tray 1 -&gt; body (flip Y)</option>
+            </select>
+          </div>
           <div class="field">
             <label for="tabTrayPattern">Tab tray pattern</label>
             <input id="tabTrayPattern" type="text">
@@ -69,38 +63,52 @@
             <label for="bodyTrayPattern">Body tray pattern</label>
             <input id="bodyTrayPattern" type="text">
           </div>
-        </div>
-        <div class="field-row">
-          <label class="checkbox"><input id="flipTabX" type="checkbox"> Flip X</label>
-          <label class="checkbox"><input id="flipTabY" type="checkbox"> Flip Y</label>
-        </div>
-        <div class="field-row">
-          <div class="field narrow">
-            <label for="nudgeX">Nudge X (in)</label>
-            <input id="nudgeX" type="text" value="0">
+          <div class="field-row toggles">
+            <label class="switch"><input id="flipTabX" type="checkbox"><span class="switch-track"></span>Flip X</label>
+            <label class="switch"><input id="flipTabY" type="checkbox"><span class="switch-track"></span>Flip Y</label>
           </div>
-          <div class="field narrow">
-            <label for="nudgeY">Nudge Y (in)</label>
-            <input id="nudgeY" type="text" value="0">
+          <div class="field-row">
+            <div class="field narrow">
+              <label for="nudgeX">Nudge X (in)</label>
+              <input id="nudgeX" type="text" value="0">
+            </div>
+            <div class="field narrow">
+              <label for="nudgeY">Nudge Y (in)</label>
+              <input id="nudgeY" type="text" value="0">
+            </div>
+            <div class="field narrow">
+              <label for="copies">Copies</label>
+              <input id="copies" type="text" value="1">
+            </div>
           </div>
-          <div class="field narrow">
-            <label for="copies">Copies</label>
-            <input id="copies" type="text" value="1">
-          </div>
+          <button id="queryTraysBtn" class="secondary" type="button">Query trays</button>
         </div>
-        <button id="queryTraysBtn" class="secondary" type="button">Query trays</button>
-      </div>
-    </details>
+      </details>
+    </aside>
 
-    <section class="card log-card">
-      <div class="log-header">Log</div>
-      <pre id="log"></pre>
-    </section>
-  </main>
+    <main class="workspace">
+      <section class="panel grid-panel">
+        <h2 class="panel-title">Pages</h2>
+        <button id="loadPdfBtn" type="button" class="dropzone">
+          <svg class="dropzone-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 15V4M12 4l-4 4M12 4l4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="dropzone-title">Drag &amp; drop a PDF here</span>
+          <span class="dropzone-sub">or click to browse</span>
+          <span class="dropzone-hint">Supports PDF</span>
+        </button>
+        <p id="pdfFileLabel" class="status"></p>
+        <p class="hint">Drag tiles to reorder. The TAB tile is where the divider gets inserted.</p>
+        <div id="pageGrid" class="page-grid"></div>
+      </section>
 
-  <footer>
-    <button id="printBtn" type="button" class="primary">Print…</button>
-  </footer>
+      <section class="panel log-panel">
+        <div class="log-header">Log</div>
+        <pre id="log"></pre>
+      </section>
+    </main>
+  </div>
 
   <div id="confirmOverlay" class="overlay hidden">
     <div class="modal">

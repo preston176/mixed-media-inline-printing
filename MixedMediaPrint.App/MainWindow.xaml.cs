@@ -67,6 +67,7 @@ public partial class MainWindow : Window
                 case "loadPrinters": HandleLoadPrinters(); break;
                 case "refreshTrays": HandleRefreshTrays(msg); break;
                 case "pickPdf": HandlePickPdf(); break;
+                case "dropPdf": HandleDropPdf(msg); break;
                 case "prepare": HandlePrepare(msg); break;
                 case "print": HandlePrint(); break;
             }
@@ -139,24 +140,55 @@ public partial class MainWindow : Window
         try
         {
             byte[] pdfBytes = File.ReadAllBytes(dialog.FileName);
-            int pageCount = PdfPageRenderer.GetPageCount(pdfBytes);
-            var thumbnails = new string[pageCount];
-            for (int i = 0; i < pageCount; i++)
-                thumbnails[i] = Convert.ToBase64String(PdfPageRenderer.RenderThumbnailPng(pdfBytes, i, widthPx: 160));
-
-            _loadedPdfPath = dialog.FileName;
-            PostMessage(new
-            {
-                type = "pdfLoaded",
-                fileName = Path.GetFileName(dialog.FileName),
-                pageCount,
-                thumbnails,
-            });
+            LoadPdf(pdfBytes, Path.GetFileName(dialog.FileName), dialog.FileName);
         }
         catch (Exception ex)
         {
             PostMessage(new { type = "pdfError", message = ex.Message });
         }
+    }
+
+    // The page can only hand over a dropped file's bytes, not a real path (WebView2 content
+    // is sandboxed like any web page) -- so unlike HandlePickPdf, this persists the bytes to
+    // a temp file first, since PdfPath needs to point at something on disk at print time.
+    private void HandleDropPdf(JsonElement msg)
+    {
+        string fileName = msg.GetProperty("fileName").GetString() ?? "dropped.pdf";
+        string base64 = msg.GetProperty("pdfBase64").GetString() ?? "";
+
+        try
+        {
+            byte[] pdfBytes = Convert.FromBase64String(base64);
+
+            string dropDir = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "MixedMediaPrint", "dropped");
+            Directory.CreateDirectory(dropDir);
+            string persistedPath = Path.Combine(dropDir, $"{Guid.NewGuid():N}-{Path.GetFileName(fileName)}");
+            File.WriteAllBytes(persistedPath, pdfBytes);
+
+            LoadPdf(pdfBytes, fileName, persistedPath);
+        }
+        catch (Exception ex)
+        {
+            PostMessage(new { type = "pdfError", message = ex.Message });
+        }
+    }
+
+    private void LoadPdf(byte[] pdfBytes, string displayFileName, string persistedPath)
+    {
+        int pageCount = PdfPageRenderer.GetPageCount(pdfBytes);
+        var thumbnails = new string[pageCount];
+        for (int i = 0; i < pageCount; i++)
+            thumbnails[i] = Convert.ToBase64String(PdfPageRenderer.RenderThumbnailPng(pdfBytes, i, widthPx: 160));
+
+        _loadedPdfPath = persistedPath;
+        PostMessage(new
+        {
+            type = "pdfLoaded",
+            fileName = displayFileName,
+            pageCount,
+            thumbnails,
+        });
     }
 
     private void HandlePrepare(JsonElement msg)

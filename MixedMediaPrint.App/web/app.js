@@ -42,6 +42,10 @@ let pageSlots = [
   { kind: "placeholder" },
 ];
 let pdfThumbnails = [];
+// After a PDF loads, the grid starts collapsed into a single stack -- fanning
+// every page tile out immediately is overwhelming for a large document. This
+// only gates what renderGrid() draws; pageSlots is already the real sequence.
+let gridRevealed = true;
 
 function applyPreset(name) {
   const p = PRESETS[name];
@@ -83,6 +87,11 @@ function tabCaption() {
 
 function renderGrid() {
   els.grid.innerHTML = "";
+  els.grid.classList.toggle("stack-mode", !gridRevealed);
+  if (!gridRevealed) {
+    renderStack();
+    return;
+  }
   pageSlots.forEach((slot, index) => {
     const tile = document.createElement("div");
     tile.className = "tile" + (slot.kind === "tab" ? " tab-tile" : "");
@@ -115,31 +124,143 @@ function renderGrid() {
 
     tile.addEventListener("dragstart", onTileDragStart);
     tile.addEventListener("dragover", onTileDragOver);
+    tile.addEventListener("dragleave", onTileDragLeave);
     tile.addEventListener("drop", onTileDrop);
     tile.addEventListener("dragend", onTileDragEnd);
     els.grid.appendChild(tile);
   });
 }
 
+function renderStack() {
+  const stack = document.createElement("div");
+  stack.className = "stack-card";
+  stack.setAttribute("role", "button");
+  stack.tabIndex = 0;
+
+  const visual = document.createElement("div");
+  visual.className = "stack-visual";
+
+  [2, 1].forEach((i) => {
+    const back = document.createElement("div");
+    back.className = "stack-layer stack-layer-back";
+    back.style.setProperty("--i", i);
+    visual.appendChild(back);
+  });
+
+  const front = document.createElement("div");
+  front.className = "stack-layer stack-layer-front";
+  const img = document.createElement("img");
+  img.src = "data:image/png;base64," + pdfThumbnails[0];
+  front.appendChild(img);
+  visual.appendChild(front);
+
+  const count = document.createElement("span");
+  count.className = "stack-count";
+  count.textContent = String(pdfThumbnails.length);
+  visual.appendChild(count);
+
+  stack.appendChild(visual);
+
+  const label = document.createElement("div");
+  label.className = "stack-label";
+  label.textContent = `${pdfThumbnails.length} page${pdfThumbnails.length === 1 ? "" : "s"} loaded — click to fan out`;
+  stack.appendChild(label);
+
+  const reveal = () => {
+    gridRevealed = true;
+    renderGrid();
+  };
+  stack.addEventListener("click", reveal);
+  stack.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      reveal();
+    }
+  });
+
+  els.grid.appendChild(stack);
+}
+
+// Drag state lives here rather than on dataTransfer, since dataTransfer.getData
+// is only reliably readable on "drop" -- dragover needs it too, to show which
+// side of the hovered tile the dragged tile would land on.
+let dragState = null;
+
+function dropSide(event, tileEl) {
+  const rect = tileEl.getBoundingClientRect();
+  return event.clientX - rect.left > rect.width / 2 ? "after" : "before";
+}
+
+function clearDropIndicators() {
+  els.grid.querySelectorAll(".drop-before, .drop-after").forEach((t) => {
+    t.classList.remove("drop-before", "drop-after");
+  });
+}
+
+// Converts a "drop before/after this index" intent into the splice target,
+// accounting for the index shift caused by removing the dragged item first --
+// this is what makes the landing spot match the insertion-line indicator
+// regardless of whether the drag moves the tile forward or backward.
+function finishDrag(overIndex, insertAfter) {
+  const fromIndex = dragState ? dragState.fromIndex : undefined;
+  dragState = null;
+  clearDropIndicators();
+  els.grid.classList.remove("grid-dragging");
+  if (fromIndex === undefined || overIndex === undefined || fromIndex === overIndex) return;
+  const insertionIndex = insertAfter ? overIndex + 1 : overIndex;
+  const target = fromIndex < insertionIndex ? insertionIndex - 1 : insertionIndex;
+  if (target === fromIndex) return;
+  const [moved] = pageSlots.splice(fromIndex, 1);
+  pageSlots.splice(target, 0, moved);
+  renderGrid();
+}
+
 function onTileDragStart(event) {
-  event.dataTransfer.setData("text/plain", event.currentTarget.dataset.index);
+  const fromIndex = parseInt(event.currentTarget.dataset.index, 10);
+  dragState = { fromIndex };
+  event.dataTransfer.setData("text/plain", String(fromIndex));
+  event.dataTransfer.effectAllowed = "move";
   event.currentTarget.classList.add("dragging");
+  els.grid.classList.add("grid-dragging");
 }
 function onTileDragOver(event) {
   event.preventDefault();
+  event.dataTransfer.dropEffect = "move";
+  if (!dragState) return;
+  const tile = event.currentTarget;
+  const overIndex = parseInt(tile.dataset.index, 10);
+  clearDropIndicators();
+  if (overIndex === dragState.fromIndex) return;
+  const side = dropSide(event, tile);
+  dragState.overIndex = overIndex;
+  dragState.insertAfter = side === "after";
+  tile.classList.add(side === "after" ? "drop-after" : "drop-before");
+}
+function onTileDragLeave(event) {
+  event.currentTarget.classList.remove("drop-before", "drop-after");
 }
 function onTileDrop(event) {
   event.preventDefault();
-  const from = parseInt(event.dataTransfer.getData("text/plain"), 10);
-  const to = parseInt(event.currentTarget.dataset.index, 10);
-  if (Number.isNaN(from) || Number.isNaN(to) || from === to) return;
-  const [moved] = pageSlots.splice(from, 1);
-  pageSlots.splice(to, 0, moved);
-  renderGrid();
+  event.stopPropagation();
+  if (!dragState) return;
+  finishDrag(dragState.overIndex, dragState.insertAfter);
 }
 function onTileDragEnd(event) {
   event.currentTarget.classList.remove("dragging");
+  finishDrag(undefined, undefined); // safety net: cleans up if the drag was cancelled (e.g. Esc) with no drop event
 }
+function onGridDragOver(event) {
+  event.preventDefault();
+  event.dataTransfer.dropEffect = "move";
+}
+function onGridDrop(event) {
+  // Dropped in the grid's empty space rather than on a tile -- send it to the end.
+  event.preventDefault();
+  if (!dragState) return;
+  finishDrag(pageSlots.length - 1, true);
+}
+els.grid.addEventListener("dragover", onGridDragOver);
+els.grid.addEventListener("drop", onGridDrop);
 
 function buildSequence() {
   return pageSlots.map((s) => (s.kind === "pdf" ? { kind: "pdf", pageIndex: s.pageIndex } : { kind: s.kind }));
@@ -207,6 +328,53 @@ els.loadPdfBtn.addEventListener("click", () => {
   post({ type: "pickPdf" });
 });
 
+// The dropped File object has bytes but no real filesystem path (the WebView2 page is
+// sandboxed like any web page) -- so unlike the native picker, the host needs the raw
+// bytes here and persists them to a temp file itself before running the same pipeline.
+async function arrayBufferToBase64(buffer) {
+  let binary = "";
+  const bytes = new Uint8Array(buffer);
+  const chunkSize = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunkSize));
+  }
+  return btoa(binary);
+}
+
+async function handleDroppedPdf(file) {
+  const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+  if (!isPdf) {
+    appendLog(`FAILED: "${file.name}" is not a PDF.`);
+    return;
+  }
+  els.loadPdfBtn.disabled = true;
+  try {
+    const pdfBase64 = await arrayBufferToBase64(await file.arrayBuffer());
+    post({ type: "dropPdf", fileName: file.name, pdfBase64 });
+  } catch (err) {
+    els.loadPdfBtn.disabled = false;
+    appendLog("Could not read the dropped file: " + err.message);
+  }
+}
+
+els.loadPdfBtn.addEventListener("dragenter", (event) => {
+  event.preventDefault();
+  els.loadPdfBtn.dataset.dragging = "true";
+});
+els.loadPdfBtn.addEventListener("dragover", (event) => {
+  event.preventDefault();
+  event.dataTransfer.dropEffect = "copy";
+});
+els.loadPdfBtn.addEventListener("dragleave", () => {
+  delete els.loadPdfBtn.dataset.dragging;
+});
+els.loadPdfBtn.addEventListener("drop", (event) => {
+  event.preventDefault();
+  delete els.loadPdfBtn.dataset.dragging;
+  const file = event.dataTransfer.files[0];
+  if (file) handleDroppedPdf(file);
+});
+
 els.printBtn.addEventListener("click", () => {
   const { request, error } = buildRequest();
   if (error) {
@@ -267,6 +435,7 @@ if (bridge) {
         const tabSlot = pageSlots.find((s) => s.kind === "tab") || { kind: "tab" };
         pageSlots = pdfThumbnails.map((_, i) => ({ kind: "pdf", pageIndex: i }));
         pageSlots.push(tabSlot);
+        gridRevealed = false;
         els.pdfFileLabel.textContent = `${msg.fileName} (${msg.pageCount} page${msg.pageCount === 1 ? "" : "s"})`;
         renderGrid();
         appendLog(`Loaded ${msg.fileName}: ${msg.pageCount} page(s). Drag the TAB tile to where it belongs.`);
